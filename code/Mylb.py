@@ -74,7 +74,7 @@ class LoadBalancerRequestHandler(SocketServer.BaseRequestHandler):
         LBPrint('serverWorkTimes Before change are:')
         LBPrint(serverWorkTimes)
         servID = getNextServer()
-        serverWorkTimes[servID] += serverWeights[req_type][servID-1]*int(req_time)
+        serverWorkTimes[servID] += serverWeights[req_type][servID]*int(req_time)
         LBPrint('recieved request %s from %s, sending to %s' % (req, self.client_address[0], getServerAddr(servID)))
         serv_sock = getServerSocket(servID)
         serv_sock.sendall(req)
