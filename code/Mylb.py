@@ -66,7 +66,12 @@ def parseRequest(req):
 class LoadBalancerRequestHandler(SocketServer.BaseRequestHandler):
 
     def handle(self):
+        global prevreqTime
         global serverWorkTimes
+        currentTime = time.clock()
+        passed=currentTime-prevreqTime
+        prevreqTime=currentTime
+        
         client_sock = self.request
         req = client_sock.recv(2)
         req_type, req_time = parseRequest(req)
@@ -75,6 +80,8 @@ class LoadBalancerRequestHandler(SocketServer.BaseRequestHandler):
         LBPrint(serverWorkTimes)
         servID = getNextServer()
         LBPrint(servID)
+        for i in len(3):
+            serverWorkTimes[i]=max(serverWorkTimes[i]-passed,0)
         serverWorkTimes[servID-1] += serverWeights[req_type][servID-1]*int(req_time)
         LBPrint('recieved request %s from %s, sending to %s' % (req, self.client_address[0], getServerAddr(servID)))
         serv_sock = getServerSocket(servID)
