@@ -48,9 +48,17 @@ def getServerAddr(servID):
     return servers[name][0]
 
 
-def getNextServer():
+def getNextServer(req_type, req_time):
     global lock
     global previous_server
+    global prevreqTime
+    global serverWorkTimes
+    global serverWeights
+    computedWorkTimes=[(serverWorkTimes[i]+serverWeights[req_type][i]*req_time) for i in range(3)]
+    return computedWorkTimes.index(min(computedWorkTimes))
+    
+    for i in range(3):
+        serverWorkTimes[i]=max(serverWorkTimes[i]-req_time,0)   
     lock.acquire()
     next_server = previous_server % 3 + 1
     previous_server = next_server
@@ -66,23 +74,26 @@ def parseRequest(req):
 class LoadBalancerRequestHandler(SocketServer.BaseRequestHandler):
 
     def handle(self):
+        global lock
         global prevreqTime
         global serverWorkTimes
         currentTime = time.clock()
         passed=currentTime-prevreqTime
         prevreqTime=currentTime
-        for i in range(3):
-            serverWorkTimes[i]=max(serverWorkTimes[i]-passed,0)
         
         client_sock = self.request
         req = client_sock.recv(2)
         req_type, req_time = parseRequest(req)
-        LBPrint('recieved a request for time' +req_time)
-        LBPrint('serverWorkTimes Before add work are:')
-        LBPrint(serverWorkTimes)
-        servID = getNextServer()
-        LBPrint(servID)
+        LBPrint('recieved a request for type ' +req_type+ 'and time '+req_time)
+        lock.acquire()
+        for i in range(3):
+            serverWorkTimes[i]=max(serverWorkTimes[i]-passed,0)
+        lock.release()
+        servID = getNextServer(req_type,int(req_time))
+        LBPrint('this is the server chosen: '+servID)
+        lock.acquire()
         serverWorkTimes[servID-1] += serverWeights[req_type][servID-1]*int(req_time)
+        lock.release()
         LBPrint('recieved request %s from %s, sending to %s' % (req, self.client_address[0], getServerAddr(servID)))
         serv_sock = getServerSocket(servID)
         serv_sock.sendall(req)
