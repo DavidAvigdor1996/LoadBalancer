@@ -5,9 +5,8 @@ previous_server = 3
 lock = threading.Lock()
 SERV_HOST = '10.0.0.1'
 serverWeights = {"M": [2,2,1], "V": [1,1,3], "P": [1,1,2]}    
-server1WorkaTime=0
-server2WorkaTime=0
-server3WorkaTime=0
+serverWorkTimes=[0,0,0]
+prevreqTime=0
 servers = {'serv1': ('192.168.0.101', None), 'serv2': ('192.168.0.102', None), 'serv3': ('192.168.0.103', None)}
 
 def LBPrint(string):
@@ -70,8 +69,10 @@ class LoadBalancerRequestHandler(SocketServer.BaseRequestHandler):
         client_sock = self.request
         req = client_sock.recv(2)
         req_type, req_time = parseRequest(req)
-        LBPrint(serverWeights[req_type])
+        LBPrint('recieved a request for time %s, those are the workloads before sending it:',req_time)
+        LBPrint(serverWorkTimes)
         servID = getNextServer()
+        serverWorkTimes[servID] += serverWeights[req_type][servID-1]*req_time
         LBPrint('recieved request %s from %s, sending to %s' % (req, self.client_address[0], getServerAddr(servID)))
         serv_sock = getServerSocket(servID)
         serv_sock.sendall(req)
