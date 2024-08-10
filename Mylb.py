@@ -66,7 +66,7 @@ class LoadBalancerRequestHandler(SocketServer.BaseRequestHandler):
         client_sock = self.request
         req = client_sock.recv(2)
         req_type, req_time = parseRequest(req)
-        print(req_type)
+        LBPrint(req_type)
         servID = getNextServer()
         LBPrint('recieved request %s from %s, sending to %s' % (req, self.client_address[0], getServerAddr(servID)))
         serv_sock = getServerSocket(servID)
@@ -83,6 +83,7 @@ class ThreadedTCPServer(SocketServer.ThreadingMixIn, SocketServer.TCPServer):
 if __name__ == '__main__':
     try:
         LBPrint('LB Started')
+        LBPrint('My LB Started')
         LBPrint('Connecting to servers')
         for name, (addr, sock) in servers.iteritems():
             servers[name] = (
