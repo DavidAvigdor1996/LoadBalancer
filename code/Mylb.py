@@ -48,11 +48,10 @@ def getServerAddr(servID):
     return servers[name][0]
 
 
-def getNextServer(req_type, req_time):
+def getNextServer(req_type, req_time,serverWorkTimes):
     global lock
     global previous_server
     global prevreqTime
-    global serverWorkTimes
     global serverWeights
     computedWorkTimes=[(serverWorkTimes[i]+serverWeights[req_type][i]*req_time) for i in range(3)]
     return computedWorkTimes.index(min(computedWorkTimes))
@@ -88,7 +87,7 @@ class LoadBalancerRequestHandler(SocketServer.BaseRequestHandler):
         lock.acquire()
         for i in range(3):
             serverWorkTimes[i]=max(serverWorkTimes[i]-passed,0)
-        servID = getNextServer(req_type,int(req_time))+1
+        servID = getNextServer(req_type,int(req_time),serverWorkTimes)+1
         LBPrint('this is the server chosen: '+str(servID))
         serverWorkTimes[servID-1] += serverWeights[req_type][servID-1]*int(req_time)
         LBPrint('this is server work times: ')
