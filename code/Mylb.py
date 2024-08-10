@@ -90,7 +90,7 @@ class LoadBalancerRequestHandler(SocketServer.BaseRequestHandler):
             serverWorkTimes[i]=max(serverWorkTimes[i]-passed,0)
         lock.release()
         servID = getNextServer(req_type,int(req_time))
-        LBPrint('this is the server chosen: '+servID)
+        LBPrint('this is the server chosen: '+str(servID))
         lock.acquire()
         serverWorkTimes[servID-1] += serverWeights[req_type][servID-1]*int(req_time)
         lock.release()
