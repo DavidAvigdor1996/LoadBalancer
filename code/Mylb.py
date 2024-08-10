@@ -88,11 +88,11 @@ class LoadBalancerRequestHandler(SocketServer.BaseRequestHandler):
         lock.acquire()
         for i in range(3):
             serverWorkTimes[i]=max(serverWorkTimes[i]-passed,0)
-        lock.release()
         servID = getNextServer(req_type,int(req_time))+1
         LBPrint('this is the server chosen: '+str(servID))
-        lock.acquire()
         serverWorkTimes[servID-1] += serverWeights[req_type][servID-1]*int(req_time)
+        LBPrint('this is server work times: ')
+        LBPrint(serverWorkTimes)
         lock.release()
         LBPrint('recieved request %s from %s, sending to %s' % (req, self.client_address[0], getServerAddr(servID)))
         serv_sock = getServerSocket(servID)
