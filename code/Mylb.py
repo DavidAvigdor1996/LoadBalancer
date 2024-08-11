@@ -86,8 +86,9 @@ def handle_client(client_sock):
     lock.release()
     LBPrint('received request %s from %s, sending to %s' % (req, client_sock.getpeername(), getServerAddr(servID)))
     serv_sock = getServerSocket(servID)
-    serv_sock.sendall(req)
-
+    serv_sock.send(req)
+    data = serv_sock.recv(BUFFER_SIZE)
+    client_sock.send(data)
     client_sock.close()
 
 if __name__ == '__main__':
